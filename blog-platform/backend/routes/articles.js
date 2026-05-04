@@ -4,10 +4,39 @@ const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all articles (public)
+// Get all articles (public) with filtering and search
 router.get('/', async (req, res) => {
   try {
-    const articles = await Article.find({ published: true })
+    const { search, category, startDate, endDate } = req.query;
+    let filter = { published: true };
+
+    // Search filter (search in title and content)
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Category filter
+    if (category && category !== 'All') {
+      filter.category = category;
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+
+    const articles = await Article.find(filter)
       .populate('author', 'username email')
       .sort({ createdAt: -1 });
     res.json(articles);

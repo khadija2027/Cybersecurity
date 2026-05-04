@@ -99,6 +99,24 @@ async function getArticles() {
   }
 }
 
+// Get articles with filters
+async function getArticlesFiltered(search = '', category = '', startDate = '', endDate = '') {
+  try {
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (category && category !== 'All') params.append('category', category);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const queryString = params.toString();
+    const endpoint = queryString ? `/articles?${queryString}` : '/articles';
+    return await apiCall(endpoint);
+  } catch (error) {
+    showNotification(error.message, 'error');
+    return [];
+  }
+}
+
 async function getArticle(id) {
   try {
     return await apiCall(`/articles/${id}`);
