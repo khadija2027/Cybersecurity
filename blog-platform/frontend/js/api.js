@@ -89,6 +89,21 @@ async function login(email, password) {
   }
 }
 
+// Login with username
+async function loginWithUsername(username, password) {
+  try {
+    const data = await apiCall('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    });
+    saveUserToStorage(data.user, data.token);
+    showNotification('Login successful!', 'success');
+    window.location.href = 'index.html';
+  } catch (error) {
+    showNotification(error.message, 'error');
+  }
+}
+
 // Articles
 async function getArticles() {
   try {
