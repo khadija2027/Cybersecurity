@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { Op } = require('sequelize');
+const { User } = global.db;
 
 const router = express.Router();
 
@@ -15,18 +16,21 @@ router.post('/register', async (req, res) => {
     }
 
     // Check if user exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { username }]
+      }
+    });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
     // Create user
-    const user = new User({ username, email, password });
-    await user.save();
+    const user = await User.create({ username, email, password });
 
     // Generate token
     const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -34,7 +38,12 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       message: 'User registered successfully',
       token,
-      user: user.toJSON()
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -53,7 +62,7 @@ router.post('/login', async (req, res) => {
 
     // Find user by email or username
     const user = await User.findOne({
-      $or: [{ email: email }, { username: username }]
+      where: email ? { email } : { username }
     });
 
     if (!user) {
@@ -70,7 +79,7 @@ router.post('/login', async (req, res) => {
     await user.save();
 
     const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user.id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -78,7 +87,12 @@ router.post('/login', async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
-      user: user.toJSON()
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

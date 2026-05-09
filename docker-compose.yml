@@ -1,7 +1,7 @@
 services:
   # Backend API
   backend:
-    build: ./backend
+    build: ./blog-platform/backend
     container_name: blog-backend
     environment:
       PORT: 5000
@@ -20,12 +20,12 @@ services:
       - blog-network
     restart: unless-stopped
     volumes:
-      - ./backend:/app
+      - ./blog-platform/backend:/app
       - /app/node_modules
 
   # Frontend Web Server
   frontend:
-    build: ./frontend
+    build: ./blog-platform/frontend
     container_name: blog-frontend
     ports:
       - "3000:3000"
@@ -35,7 +35,7 @@ services:
       - blog-network
     restart: unless-stopped
     volumes:
-      - ./frontend:/app
+      - ./blog-platform/frontend:/app
       - /app/node_modules
     environment:
       - API_URL=http://backend:5000/api

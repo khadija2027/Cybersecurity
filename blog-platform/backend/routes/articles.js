@@ -1,5 +1,6 @@
 const express = require('express');
-const Article = require('../models/Article');
+const { Op } = require('sequelize');
+const { Article, User } = global.db;
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
@@ -8,37 +9,40 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const { search, category, startDate, endDate } = req.query;
-    let filter = { published: true };
+    let where = { published: true };
 
     // Search filter (search in title and content)
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { content: { $regex: search, $options: 'i' } }
+      where[Op.or] = [
+        { title: { [Op.like]: `%${search}%` } },
+        { content: { [Op.like]: `%${search}%` } }
       ];
     }
 
     // Category filter
     if (category && category !== 'All') {
-      filter.category = category;
+      where.category = category;
     }
 
     // Date range filter
     if (startDate || endDate) {
-      filter.createdAt = {};
+      where.createdAt = {};
       if (startDate) {
-        filter.createdAt.$gte = new Date(startDate);
+        where.createdAt[Op.gte] = new Date(startDate);
       }
       if (endDate) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
-        filter.createdAt.$lte = end;
+        where.createdAt[Op.lte] = end;
       }
     }
 
-    const articles = await Article.find(filter)
-      .populate('author', 'username email')
-      .sort({ createdAt: -1 });
+    const articles = await Article.findAll({
+      where,
+      include: [{ model: User, attributes: ['username', 'email'] }],
+      order: [['createdAt', 'DESC']]
+    });
+
     res.json(articles);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -48,15 +52,19 @@ router.get('/', async (req, res) => {
 // Get single article
 router.get('/:id', async (req, res) => {
   try {
-    const article = await Article.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { views: 1 } },
-      { new: true }
-    ).populate('author', 'username email');
+    const article = await Article.findOne({
+      where: { id: req.params.id },
+      include: [{ model: User, attributes: ['username', 'email'] }]
+    });
     
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
     }
+
+    // Increment views
+    article.views += 1;
+    await article.save();
+
     res.json(article);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -72,16 +80,15 @@ router.post('/', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Title and content required' });
     }
 
-    const article = new Article({
+    const article = await Article.create({
       title,
       content,
       category: category || 'General',
-      author: req.user.id,
+      authorId: req.user.id,
       authorName: req.user.username,
       image: image || null
     });
 
-    await article.save();
     res.status(201).json({ message: 'Article created', article });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -91,13 +98,15 @@ router.post('/', authMiddleware, async (req, res) => {
 // Update article (author or admin)
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const article = await Article.findById(req.params.id);
+    const article = await Article.findOne({
+      where: { id: req.params.id }
+    });
 
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    if (article.author.toString() !== req.user.id && req.user.role !== 'admin') {
+    if (article.authorId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -106,7 +115,6 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (content) article.content = content;
     if (category) article.category = category;
     if (image !== undefined) article.image = image;
-    article.updatedAt = new Date();
 
     await article.save();
     res.json({ message: 'Article updated', article });
@@ -118,17 +126,19 @@ router.put('/:id', authMiddleware, async (req, res) => {
 // Delete article (author or admin)
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    const article = await Article.findById(req.params.id);
+    const article = await Article.findOne({
+      where: { id: req.params.id }
+    });
 
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    if (article.author.toString() !== req.user.id && req.user.role !== 'admin') {
+    if (article.authorId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    await Article.deleteOne({ _id: req.params.id });
+    await Article.destroy({ where: { id: req.params.id } });
     res.json({ message: 'Article deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });

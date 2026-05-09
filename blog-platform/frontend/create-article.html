@@ -71,7 +71,7 @@
         return;
       }
 
-      if (currentUser && (currentUser.id !== article.author._id && currentUser.role !== 'admin')) {
+      if (currentUser && (currentUser.id !== article.authorId && currentUser.role !== 'admin')) {
         window.location.href = 'article.html?id=' + id;
         return;
       }
@@ -113,7 +113,7 @@
         if (editingId) {
           window.location.href = 'article.html?id=' + editingId;
         } else {
-          window.location.href = 'article.html?id=' + result._id;
+          window.location.href = 'article.html?id=' + result.id;
         }
       }
     }

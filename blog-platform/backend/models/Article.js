@@ -1,45 +1,46 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const articleSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  content: {
-    type: String,
-    required: true
-  },
-  image: {
-    type: String,
-    default: null
-  },
-  author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  authorName: String,
-  category: {
-    type: String,
-    default: 'General'
-  },
-  views: {
-    type: Number,
-    default: 0
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  published: {
-    type: Boolean,
-    default: true
-  }
-});
+module.exports = (sequelize) => {
+  const Article = sequelize.define('Article', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    content: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    image: {
+      type: DataTypes.STRING,
+      defaultValue: null
+    },
+    authorId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    authorName: DataTypes.STRING,
+    category: {
+      type: DataTypes.STRING,
+      defaultValue: 'General'
+    },
+    views: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    published: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  }, {
+    timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  });
 
-module.exports = mongoose.model('Article', articleSchema);
+  return Article;
+};

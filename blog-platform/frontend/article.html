@@ -41,12 +41,12 @@
 
       document.title = article.title + ' - BlogHub';
       
-      const canEdit = currentUser && (currentUser.id === article.author._id || currentUser.role === 'admin');
+      const canEdit = currentUser && (currentUser.id === article.authorId || currentUser.role === 'admin');
       const canDelete = canEdit;
 
       const actionButtons = canEdit ? `
-        <button class="btn btn-primary" onclick="window.location.href='create-article.html?id=${article._id}'">Edit</button>
-        ${canDelete ? `<button class="btn btn-danger" onclick="if(confirm('Delete this article?')) { deleteArticle('${article._id}').then(() => window.location.href='index.html'); }">Delete</button>` : ''}
+        <button class="btn btn-primary" onclick="window.location.href='create-article.html?id=${article.id}'">Edit</button>
+        ${canDelete ? `<button class="btn btn-danger" onclick="if(confirm('Delete this article?')) { deleteArticle('${article.id}').then(() => window.location.href='index.html'); }">Delete</button>` : ''}
       ` : '';
 
       const container = document.getElementById('articleContainer');
@@ -103,7 +103,7 @@
             <div class="comment-content">${escapeHtml(comment.content)}</div>
             ${currentUser && (currentUser.id === comment.author || currentUser.role === 'admin') ? `
               <div class="comment-actions">
-                <button class="comment-btn" onclick="if(confirm('Delete this comment?')) { deleteComment('${comment._id}').then(() => location.reload()); }">Delete</button>
+                <button class="comment-btn" onclick="if(confirm('Delete this comment?')) { deleteComment('${comment.id}').then(() => location.reload()); }">Delete</button>
               </div>
             ` : ''}
           </div>

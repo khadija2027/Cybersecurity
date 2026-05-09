@@ -96,9 +96,9 @@
           <td>${user.lastLogin ? formatDate(user.lastLogin) : 'Never'}</td>
           <td>
             ${user.isActive && user.role === 'user' ? `
-              <button class="comment-btn" onclick="deactivateUserConfirm('${user._id}', '${escapeHtml(user.username)}')">Deactivate</button>
+              <button class="comment-btn" onclick="deactivateUserConfirm('${user.id}', '${escapeHtml(user.username)}')">Deactivate</button>
             ` : ''}
-            <button class="comment-btn" onclick="viewUserActivity('${user._id}')">View Activity</button>
+            <button class="comment-btn" onclick="viewUserActivity('${user.id}')">View Activity</button>
           </td>
         </tr>
       `).join('');

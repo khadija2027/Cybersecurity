@@ -95,7 +95,7 @@
       }
 
       container.innerHTML = articles.map(article => `
-        <div class="article-card" onclick="window.location.href='article.html?id=${article._id}'">
+        <div class="article-card" onclick="window.location.href='article.html?id=${article.id}'">
           ${article.image ? `<img src="${article.image}" alt="${escapeHtml(article.title)}" class="article-image">` : '<div class="article-image">📝</div>'}
           <div class="article-header">
             <h3 class="article-title">${escapeHtml(article.title)}</h3>
