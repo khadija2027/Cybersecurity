@@ -1,8 +1,20 @@
 const jwt = require('jsonwebtoken');
 
+const parseCookies = (header = '') => Object.fromEntries(
+  header
+    .split(';')
+    .map((part) => part.trim().split('='))
+    .filter(([key, value]) => key && value)
+    .map(([key, value]) => [key, decodeURIComponent(value)])
+);
+
+// Authentication middleware
 const authMiddleware = (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const cookies = parseCookies(req.headers.cookie);
+    const bearerToken = req.headers.authorization?.split(' ')[1];
+    const token = cookies.authToken || bearerToken;
+
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }

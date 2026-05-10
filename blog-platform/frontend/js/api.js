@@ -1,6 +1,5 @@
 const API_URL = 'http://localhost:5000/api';
 let currentUser = null;
-let currentToken = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,30 +7,34 @@ document.addEventListener('DOMContentLoaded', () => {
   updateNavigation();
 });
 
-// Local Storage
-function saveUserToStorage(user, token) {
-  localStorage.setItem('user', JSON.stringify(user));
-  localStorage.setItem('token', token);
+// Cookie-backed session state for the intentionally CSRF-vulnerable lab.
+function saveUserToStorage(user) {
   currentUser = user;
-  currentToken = token;
 }
 
 function loadUserFromStorage() {
-  const user = localStorage.getItem('user');
-  const token = localStorage.getItem('token');
-  if (user && token) {
-    currentUser = JSON.parse(user);
-    currentToken = token;
+  const cookie = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('currentUser='));
+
+  if (cookie) {
+    try {
+      currentUser = JSON.parse(decodeURIComponent(cookie.split('=')[1]));
+    } catch (error) {
+      currentUser = null;
+    }
   }
 }
 
-function logout() {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
+async function logout() {
+  try {
+    await apiCall('/auth/logout', { method: 'POST' });
+  } catch (error) {
+    console.warn(error.message);
+  }
   currentUser = null;
-  currentToken = null;
   updateNavigation();
-  window.location.href = 'index.html';
+  window.location.href = 'login.html';
 }
 
 // API Calls
@@ -42,13 +45,10 @@ async function apiCall(endpoint, options = {}) {
     ...options.headers
   };
 
-  if (currentToken) {
-    headers.Authorization = `Bearer ${currentToken}`;
-  }
-
   const response = await fetch(url, {
     ...options,
-    headers
+    headers,
+    credentials: 'include'
   });
 
   if (!response.ok) {
@@ -66,9 +66,9 @@ async function register(username, email, password) {
       method: 'POST',
       body: JSON.stringify({ username, email, password })
     });
-    saveUserToStorage(data.user, data.token);
+    saveUserToStorage(data.user);
     showNotification('Registration successful!', 'success');
-    window.location.href = 'index.html';
+    window.location.href = 'home.html';
   } catch (error) {
     showNotification(error.message, 'error');
   }
@@ -81,9 +81,9 @@ async function login(email, password) {
       method: 'POST',
       body: JSON.stringify({ email, password })
     });
-    saveUserToStorage(data.user, data.token);
+    saveUserToStorage(data.user);
     showNotification('Login successful!', 'success');
-    window.location.href = 'index.html';
+    window.location.href = 'home.html';
   } catch (error) {
     showNotification(error.message, 'error');
   }
@@ -96,9 +96,9 @@ async function loginWithUsername(username, password) {
       method: 'POST',
       body: JSON.stringify({ username, password })
     });
-    saveUserToStorage(data.user, data.token);
+    saveUserToStorage(data.user);
     showNotification('Login successful!', 'success');
-    window.location.href = 'index.html';
+    window.location.href = 'home.html';
   } catch (error) {
     showNotification(error.message, 'error');
   }
@@ -277,7 +277,7 @@ function checkAuth() {
 
 function checkAdmin() {
   if (!currentUser || currentUser.role !== 'admin') {
-    window.location.href = 'index.html';
+    window.location.href = 'home.html';
     return false;
   }
   return true;

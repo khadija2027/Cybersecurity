@@ -1,0 +1,11 @@
+{
+  "capturedAt": "2026-05-10T12:50:08.184Z",
+  "remoteAddress": "::1",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+  "proof": {
+    "action": "change-password",
+    "changedToPassword": "changed-by-csrf"
+  },
+  "sensitiveDataCollected": false,
+  "note": "Training capture only. This lab never records old passwords, cookies, or tokens."
+}

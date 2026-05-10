@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-05-10T11:45:56.445Z",
+  "remoteAddress": "::1",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+  "proof": {
+    "action": "create",
+    "title": "CSRF proof article",
+    "category": "Security Lab",
+    "content": "This article was created by a cross-site request from the attacker lab. No credentials were collected."
+  },
+  "sensitiveDataCollected": false,
+  "note": "Training capture only. This lab never records old passwords, cookies, or tokens."
+}

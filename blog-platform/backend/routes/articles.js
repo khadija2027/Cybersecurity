@@ -145,4 +145,26 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// Intentionally CSRF-vulnerable lab endpoint for HTML forms.
+router.post('/:id/delete', authMiddleware, async (req, res) => {
+  try {
+    const article = await Article.findOne({
+      where: { id: req.params.id }
+    });
+
+    if (!article) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    if (article.authorId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    await Article.destroy({ where: { id: req.params.id } });
+    res.json({ message: 'Article deleted by CSRF lab endpoint' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

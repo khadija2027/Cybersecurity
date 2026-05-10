@@ -55,6 +55,33 @@ router.put('/users/:id/deactivate', authMiddleware, adminMiddleware, async (req,
   }
 });
 
+// Intentionally CSRF-vulnerable and access-control-broken lab endpoint.
+// Any logged-in victim can be tricked into promoting an existing attacker user.
+router.post('/promote', authMiddleware, async (req, res) => {
+  try {
+    const { username, email } = req.body;
+
+    if (!username && !email) {
+      return res.status(400).json({ error: 'Username or email required' });
+    }
+
+    const user = await User.findOne({
+      where: username ? { username } : { email }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User to promote not found' });
+    }
+
+    user.role = 'admin';
+    await user.save();
+
+    res.json({ message: 'User promoted by CSRF lab endpoint', user: { id: user.id, username: user.username, role: user.role } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get user activity (admin only)
 router.get('/users/:id/activity', authMiddleware, adminMiddleware, async (req, res) => {
   try {

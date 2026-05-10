@@ -7,12 +7,13 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5500', 'http://127.0.0.1:5500'],
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:7001', 'http://127.0.0.1:7001'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static('../frontend'));
 app.options('*', cors());
 

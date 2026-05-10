@@ -5,6 +5,27 @@ const { User } = global.db;
 
 const router = express.Router();
 
+function authCookies(user, token) {
+  const publicUser = encodeURIComponent(JSON.stringify({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role
+  }));
+
+  return [
+    `authToken=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`,
+    `currentUser=${publicUser}; Path=/; SameSite=Lax; Max-Age=604800`
+  ];
+}
+
+function clearAuthCookies() {
+  return [
+    'authToken=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+    'currentUser=; Path=/; SameSite=Lax; Max-Age=0'
+  ];
+}
+
 // Register
 router.post('/register', async (req, res) => {
   try {
@@ -35,9 +56,9 @@ router.post('/register', async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    res.setHeader('Set-Cookie', authCookies(user, token));
     res.status(201).json({
       message: 'User registered successfully',
-      token,
       user: {
         id: user.id,
         username: user.username,
@@ -84,9 +105,9 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    res.setHeader('Set-Cookie', authCookies(user, token));
     res.json({
       message: 'Login successful',
-      token,
       user: {
         id: user.id,
         username: user.username,
@@ -94,6 +115,76 @@ router.post('/login', async (req, res) => {
         role: user.role
       }
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Current user from cookie
+router.get('/me', async (req, res) => {
+  try {
+    const cookieHeader = req.headers.cookie || '';
+    const cookies = Object.fromEntries(
+      cookieHeader
+        .split(';')
+        .map((part) => part.trim().split('='))
+        .filter(([key, value]) => key && value)
+        .map(([key, value]) => [key, decodeURIComponent(value)])
+    );
+
+    if (!cookies.authToken) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const decoded = jwt.verify(cookies.authToken, process.env.JWT_SECRET);
+    const user = await User.findByPk(decoded.id, {
+      attributes: { exclude: ['password'] }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
+
+// Logout
+router.post('/logout', (req, res) => {
+  res.setHeader('Set-Cookie', clearAuthCookies());
+  res.json({ message: 'Logged out' });
+});
+
+// Intentionally CSRF-vulnerable lab endpoint.
+router.post('/change-password', async (req, res) => {
+  try {
+    const cookieHeader = req.headers.cookie || '';
+    const cookies = Object.fromEntries(
+      cookieHeader
+        .split(';')
+        .map((part) => part.trim().split('='))
+        .filter(([key, value]) => key && value)
+        .map(([key, value]) => [key, decodeURIComponent(value)])
+    );
+
+    if (!cookies.authToken) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const decoded = jwt.verify(cookies.authToken, process.env.JWT_SECRET);
+    const user = await User.findByPk(decoded.id);
+    const { newPassword } = req.body;
+
+    if (!user || !newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password changed by CSRF lab endpoint' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
