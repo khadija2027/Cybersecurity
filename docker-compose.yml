@@ -1,5 +1,5 @@
 services:
-  # Backend API
+  # Backend API (SECURE)
   backend:
     build: ./blog-platform/backend
     container_name: blog-backend
@@ -23,6 +23,29 @@ services:
       - ./blog-platform/backend:/app
       - /app/node_modules
 
+  # VULNERABLE BACKEND (SQL Injection enabled)
+  backend-vulnerable:
+    build: ./blog-platform/backend
+    container_name: blog-backend-vulnerable
+    command: node server_vulnerable.js
+    environment:
+      PORT: 5001
+      DB_HOST: mysql
+      DB_USER: blog_user
+      DB_PASSWORD: blog_password
+      DB_NAME: blog_platform
+    ports:
+      - "5001:5001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - blog-network
+    restart: unless-stopped
+    volumes:
+      - ./blog-platform/backend:/app
+      - /app/node_modules
+
   # Frontend Web Server
   frontend:
     build: ./blog-platform/frontend
@@ -31,6 +54,7 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+      - backend-vulnerable
     networks:
       - blog-network
     restart: unless-stopped
@@ -39,6 +63,7 @@ services:
       - /app/node_modules
     environment:
       - API_URL=http://backend:5000/api
+      - VULNERABLE_API_URL=http://backend-vulnerable:5001/api/vulnerable
 
   # MySQL Database
   mysql:

